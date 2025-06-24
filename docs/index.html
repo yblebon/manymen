@@ -40,6 +40,7 @@
         <label for="lineWidth">Line Width:</label>
         <input type="range" id="lineWidth" min="1" max="20" value="5">
         <button onclick="clearCanvas()">Clear Canvas</button>
+        <button onclick="exportCanvas()">Export as PNG</button>
     </div>
 
     <script>
@@ -122,6 +123,16 @@
 
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function exportCanvas() {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'handwriting.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
