@@ -3,137 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handwriting Board</title>
+    <title>Many Men Lottery</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #f0f0f0;
+            justify-content: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
+            background-color: #f0f0f0;
         }
-        #canvas {
-            border: 2px solid #333;
-            background-color: white;
-            cursor: crosshair;
+        h1 {
+            color: #333;
         }
-        .controls {
+        #lotteryButton {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #lotteryButton:hover {
+            background-color: #45a049;
+        }
+        #lotteryButton:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #d32f2f;
+            text-align: center;
+            min-height: 30px;
+        }
+        .funny-facts {
             margin-top: 10px;
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            align-items: center;
+            justify-content: center;
         }
-        button, select, input {
-            padding: 8px;
+        .tag {
+            background-color: #2196F3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        #lotteryContainer {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            margin-top: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #fff;
+            display: none;
+        }
+        .lottery-ball {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            animation: bounce 0.5s ease-in-out infinite alternate;
+        }
+        .man-ball {
+            background-color: #2196F3; /* Blue for man */
+        }
+        .woman-ball {
+            background-color: #e91e63; /* Pink for woman */
+        }
+        @keyframes bounce {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+        .ball1 { left: 30px; top: 20px; animation-delay: 0s; }
+        .ball2 { left: 170px; top: 20px; animation-delay: 0.2s; }
+        #profileImage {
+            margin-top: 20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: none;
+        }
+        #loadingIcon {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #ccc;
+            border-top: 5px solid #4CAF50;
+            border-radius: 50%;
+            position: relative;
+            animation: spin 1s linear infinite;
+            margin-top: 10px;
+        }
+        #loadingIcon::after {
+            content: 'M';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <h1>Handwriting Board</h1>
-    <canvas id="canvas" width="800" height="400"></canvas>
-    <div class="controls">
-        <label for="color">Pen Color:</label>
-        <input type="color" id="color" value="#000000">
-        <label for="lineWidth">Line Width:</label>
-        <input type="range" id="lineWidth" min="1" max="20" value="5">
-        <button onclick="clearCanvas()">Clear Canvas</button>
-        <button onclick="exportCanvas()">Export as PNG</button>
+    <h1>Many Men Lottery</h1>
+    <button id="lotteryButton">Draw Winner!</button>
+    <div id="lotteryContainer">
+        <div class="lottery-ball man-ball ball1"></div>
+        <div class="lottery-ball woman-ball ball2"></div>
     </div>
+    <div id="loadingIcon"></div>
+    <div id="result"></div>
+    <img id="profileImage" src="" alt="Winner Profile">
+    <div id="funnyFacts" class="funny-facts"></div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
+        const participants = [
+            { name: "Alice", sex: "W", funnyFacts: ["Loves to sing off-key", "Collects rubber ducks", "Afraid of clowns"], image: "https://via.placeholder.com/100?text=Alice" },
+            { name: "Bob", sex: "M", funnyFacts: ["Eats pizza with a fork", "Talks to plants", "Owns 50 socks"], image: "https://via.placeholder.com/100?text=Bob" },
+            { name: "Charlie", sex: "M", funnyFacts: ["Believes in aliens", "Dances in the rain", "Hates broccoli"], image: "https://via.placeholder.com/100?text=Charlie" },
+            { name: "Diana", sex: "W", funnyFacts: ["Sleeps with socks on", "Addicted to puns", "Lost at chess to a dog"], image: "https://via.placeholder.com/100?text=Diana" },
+            { name: "Ethan", sex: "M", funnyFacts: ["Snores like a lawnmower", "Loves spicy food", "Can't whistle"], image: "https://via.placeholder.com/100?text=Ethan" },
+            { name: "Fiona", sex: "W", funnyFacts: ["Obsessed with cats", "Sings in the shower", "Trips over air"], image: "https://via.placeholder.com/100?text=Fiona" },
+            { name: "George", sex: "M", funnyFacts: ["Wears mismatched shoes", "Loves bad jokes", "Allergic to mornings"], image: "https://via.placeholder.com/100?text=George" },
+            { name: "Hannah", sex: "W", funnyFacts: ["Talks in her sleep", "Loves glitter", "Scared of balloons"], image: "https://via.placeholder.com/100?text=Hannah" },
+            { name: "Ian", sex: "M", funnyFacts: ["Eats cereal with a spoon", "Hums constantly", "Loves old movies"], image: "https://via.placeholder.com/100?text=Ian" },
+            { name: "Julia", sex: "W", funnyFacts: ["Draws on her hand", "Loves bubble wrap", "Sings to her goldfish"], image: "https://via.placeholder.com/100?text=Julia" }
+        ];
 
-        // Set initial drawing properties
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        updatePen();
+        const button = document.getElementById('lotteryButton');
+        const resultDiv = document.getElementById('result');
+        const funnyFactsDiv = document.getElementById('funnyFacts');
+        const lotteryContainer = document.getElementById('lotteryContainer');
+        const profileImage = document.getElementById('profileImage');
+        const loadingIcon = document.getElementById('loadingIcon');
+        const manBall = document.querySelector('.man-ball');
+        const womanBall = document.querySelector('.woman-ball');
 
-        // Update pen color and width
-        function updatePen() {
-            ctx.strokeStyle = document.getElementById('color').value;
-            ctx.lineWidth = document.getElementById('lineWidth').value;
-        }
-
-        // Event listeners for pen color and width changes
-        document.getElementById('color').addEventListener('input', updatePen);
-        document.getElementById('lineWidth').addEventListener('input', updatePen);
-
-        // Mouse events
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        // Touch events for mobile support
-        canvas.addEventListener('touchstart', handleTouchStart);
-        canvas.addEventListener('touchmove', handleTouchMove);
-        canvas.addEventListener('touchend', stopDrawing);
-
-        function startDrawing(e) {
-            isDrawing = true;
-            const pos = getPosition(e);
-            [lastX, lastY] = [pos.x, pos.y];
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            e.preventDefault(); // Prevent scrolling on touch devices
-            const pos = getPosition(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            [lastX, lastY] = [pos.x, pos.y];
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-        }
-
-        function getPosition(e) {
-            const rect = canvas.getBoundingClientRect();
-            if (e.type.includes('touch')) {
-                return {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                };
+        function updateBallNames() {
+            const men = participants.filter(p => p.sex === "M");
+            const women = participants.filter(p => p.sex === "W");
+            if (men.length > 0) {
+                const randomManIndex = Math.floor(Math.random() * men.length);
+                manBall.textContent = men[randomManIndex].name;
             }
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
+            if (women.length > 0) {
+                const randomWomanIndex = Math.floor(Math.random() * women.length);
+                womanBall.textContent = women[randomWomanIndex].name;
+            }
         }
 
-        function handleTouchStart(e) {
-            e.preventDefault();
-            startDrawing(e);
-        }
+        button.addEventListener('click', () => {
+            button.disabled = true;
+            resultDiv.textContent = 'Drawing...';
+            funnyFactsDiv.innerHTML = '';
+            profileImage.style.display = 'none';
+            lotteryContainer.style.display = 'block';
+            loadingIcon.style.display = 'block';
 
-        function handleTouchMove(e) {
-            e.preventDefault();
-            draw(e);
-        }
+            updateBallNames();
+            const ballAnimation = setInterval(updateBallNames, 300);
 
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function exportCanvas() {
-            const dataURL = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = 'handwriting.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+            setTimeout(() => {
+                clearInterval(ballAnimation);
+                lotteryContainer.style.display = 'none';
+                loadingIcon.style.display = 'none';
+                const randomIndex = Math.floor(Math.random() * participants.length);
+                const winner = participants[randomIndex];
+                resultDiv.textContent = `The winner is: ${winner.name} (${winner.sex})!`;
+                profileImage.src = winner.image;
+                profileImage.style.display = 'block';
+                funnyFactsDiv.innerHTML = winner.funnyFacts.map(fact => `<span class="tag">${fact}</span>`).join('');
+                button.disabled = false;
+            }, 3000);
+        });
     </script>
 </body>
 </html>
