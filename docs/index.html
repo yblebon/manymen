@@ -81,8 +81,8 @@
             text-align: center;
             animation: bounce 0.5s ease-in-out infinite alternate;
         }
-        .man-ball {
-            background-color: #2196F3; /* Blue for man */
+        .male-ball {
+            background-color: #2196F3; /* Blue for male */
         }
         .woman-ball {
             background-color: #e91e63; /* Pink for woman */
@@ -130,9 +130,9 @@
 </head>
 <body>
     <h1>Many Men Lottery</h1>
-    <button id="lotteryButton">Draw Winner!</button>
+    <button id="lotteryButton" disabled>Loading data...</button>
     <div id="lotteryContainer">
-        <div class="lottery-ball man-ball ball1"></div>
+        <div class="lottery-ball male-ball ball1"></div>
         <div class="lottery-ball woman-ball ball2"></div>
     </div>
     <div id="loadingIcon"></div>
@@ -141,18 +141,30 @@
     <div id="funnyFacts" class="funny-facts"></div>
 
     <script>
-        const participants = [
-            { name: "Alice", sex: "W", funnyFacts: ["Loves to sing off-key", "Collects rubber ducks", "Afraid of clowns"], image: "https://via.placeholder.com/100?text=Alice" },
-            { name: "Bob", sex: "M", funnyFacts: ["Eats pizza with a fork", "Talks to plants", "Owns 50 socks"], image: "https://via.placeholder.com/100?text=Bob" },
-            { name: "Charlie", sex: "M", funnyFacts: ["Believes in aliens", "Dances in the rain", "Hates broccoli"], image: "https://via.placeholder.com/100?text=Charlie" },
-            { name: "Diana", sex: "W", funnyFacts: ["Sleeps with socks on", "Addicted to puns", "Lost at chess to a dog"], image: "https://via.placeholder.com/100?text=Diana" },
-            { name: "Ethan", sex: "M", funnyFacts: ["Snores like a lawnmower", "Loves spicy food", "Can't whistle"], image: "https://via.placeholder.com/100?text=Ethan" },
-            { name: "Fiona", sex: "W", funnyFacts: ["Obsessed with cats", "Sings in the shower", "Trips over air"], image: "https://via.placeholder.com/100?text=Fiona" },
-            { name: "George", sex: "M", funnyFacts: ["Wears mismatched shoes", "Loves bad jokes", "Allergic to mornings"], image: "https://via.placeholder.com/100?text=George" },
-            { name: "Hannah", sex: "W", funnyFacts: ["Talks in her sleep", "Loves glitter", "Scared of balloons"], image: "https://via.placeholder.com/100?text=Hannah" },
-            { name: "Ian", sex: "M", funnyFacts: ["Eats cereal with a spoon", "Hums constantly", "Loves old movies"], image: "https://via.placeholder.com/100?text=Ian" },
-            { name: "Julia", sex: "W", funnyFacts: ["Draws on her hand", "Loves bubble wrap", "Sings to her goldfish"], image: "https://via.placeholder.com/100?text=Julia" }
-        ];
+        // Replace with your actual GitHub Pages URL
+        const jsonUrl = 'https://raw.githubusercontent.com/yblebon/datasources/main/manymen.json';
+
+        let participants = [];
+
+        // Fetch JSON data from GitHub
+        async function loadParticipants() {
+            try {
+                const response = await fetch(jsonUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                participants = await response.json();
+                document.getElementById('lotteryButton').disabled = false;
+                document.getElementById('lotteryButton').textContent = 'Draw Winner!';
+                document.getElementById('result').textContent = 'Ready to draw!';
+            } catch (error) {
+                console.error('Error loading JSON:', error);
+                document.getElementById('result').textContent = 'Failed to load participant data. Please try again later.';
+            }
+        }
+
+        // Initialize by loading JSON data
+        loadParticipants();
 
         const button = document.getElementById('lotteryButton');
         const resultDiv = document.getElementById('result');
@@ -160,15 +172,15 @@
         const lotteryContainer = document.getElementById('lotteryContainer');
         const profileImage = document.getElementById('profileImage');
         const loadingIcon = document.getElementById('loadingIcon');
-        const manBall = document.querySelector('.man-ball');
+        const maleBall = document.querySelector('.male-ball');
         const womanBall = document.querySelector('.woman-ball');
 
         function updateBallNames() {
-            const men = participants.filter(p => p.sex === "M");
+            const males = participants.filter(p => p.sex === "M");
             const women = participants.filter(p => p.sex === "W");
-            if (men.length > 0) {
-                const randomManIndex = Math.floor(Math.random() * men.length);
-                manBall.textContent = men[randomManIndex].name;
+            if (males.length > 0) {
+                const randomMaleIndex = Math.floor(Math.random() * males.length);
+                maleBall.textContent = males[randomMaleIndex].name;
             }
             if (women.length > 0) {
                 const randomWomanIndex = Math.floor(Math.random() * women.length);
@@ -177,6 +189,10 @@
         }
 
         button.addEventListener('click', () => {
+            if (participants.length === 0) {
+                resultDiv.textContent = 'No participant data available!';
+                return;
+            }
             button.disabled = true;
             resultDiv.textContent = 'Drawing...';
             funnyFactsDiv.innerHTML = '';
